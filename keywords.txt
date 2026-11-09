@@ -1,0 +1,62 @@
+#######################################
+# Syntax Coloring Map for BOTGyro
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+BOTGyro	KEYWORD1
+BOTGyroKalman	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+calibrate	KEYWORD2
+startCalibration	KEYWORD2
+isCalibrated	KEYWORD2
+update	KEYWORD2
+resetFilters	KEYWORD2
+setODR	KEYWORD2
+setFullScale	KEYWORD2
+setI2CClock	KEYWORD2
+setCalibrationSamples	KEYWORD2
+setKalman	KEYWORD2
+getX	KEYWORD2
+getY	KEYWORD2
+getZ	KEYWORD2
+getRawX	KEYWORD2
+getRawY	KEYWORD2
+getRawZ	KEYWORD2
+getAccelX	KEYWORD2
+getAccelY	KEYWORD2
+getAccelZ	KEYWORD2
+setAccelFullScale	KEYWORD2
+setFilterEnabled	KEYWORD2
+enableAttitude	KEYWORD2
+setAttitudeFilter	KEYWORD2
+getPitch	KEYWORD2
+getRoll	KEYWORD2
+getState	KEYWORD2
+isRunning	KEYWORD2
+isCalibrating	KEYWORD2
+isFaulted	KEYWORD2
+getSampleRate	KEYWORD2
+getBiasX	KEYWORD2
+getBiasY	KEYWORD2
+getBiasZ	KEYWORD2
+getNoiseX	KEYWORD2
+getNoiseY	KEYWORD2
+getNoiseZ	KEYWORD2
+stateString	KEYWORD2
+configure	KEYWORD2
+reset	KEYWORD2
+value	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+BOTGYRO_VERSION	LITERAL1

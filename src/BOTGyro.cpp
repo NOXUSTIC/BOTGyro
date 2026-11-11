@@ -2,7 +2,7 @@
  * BOTGyro.cpp  -  implementation
  * See BOTGyro.h for the public interface and usage notes.
  *
- * This driver talks to the ASM330LHH directly over I2C (Wire). No external
+ * This driver talks to the IMU directly over I2C (Wire). No external
  * sensor library is required.
  */
 
@@ -10,7 +10,7 @@
 #include <math.h>
 
 namespace {
-  // ---- ASM330LHH register map ----
+  // ---- IMU register map ----
   const uint8_t REG_WHO_AM_I = 0x0F;   // -> 0x6B
   const uint8_t REG_CTRL1_XL = 0x10;   // accelerometer: ODR | FS
   const uint8_t REG_CTRL2_G  = 0x11;   // gyroscope:     ODR | FS
@@ -20,8 +20,6 @@ namespace {
   const uint8_t REG_OUTX_L_A = 0x28;   // accel X..Z, 6 bytes
   const uint8_t WHOAMI_VALUE = 0x6B;
 
-  // Output data rate code (shared accel/gyro encoding). Floors to the nearest
-  // supported rate at or below the requested value.
   uint8_t odrToBits(float hz) {
     if (hz >= 6660) return 0x0A;
     if (hz >= 3330) return 0x09;
@@ -33,13 +31,13 @@ namespace {
     if (hz >= 52)   return 0x03;
     if (hz >= 26)   return 0x02;
     if (hz >= 12)   return 0x01;
-    return 0x04;                         // default 104 Hz
+    return 0x04;                        
   }
 }
 
-// ===========================================================================
+
 //  BOTGyroKalman
-// ===========================================================================
+
 void BOTGyroKalman::configure(float r, float qMin, float qMax,
                               float deadzone, float ramp) {
   _r = r; _qMin = qMin; _qMax = qMax; _deadzone = deadzone; _ramp = ramp;
@@ -68,9 +66,9 @@ float BOTGyroKalman::update(float z) {
   return _x;
 }
 
-// ===========================================================================
+
 //  BOTGyro
-// ===========================================================================
+
 BOTGyro::BOTGyro(TwoWire &wire, uint8_t i2cAddress)
   : _wire(&wire), _address(i2cAddress) {}
 
@@ -170,9 +168,9 @@ bool BOTGyro::readAccel(int32_t out[3]) {       // accel -> mg
   return true;
 }
 
-// ---------------------------------------------------------------------------
+
 //  State machine
-// ---------------------------------------------------------------------------
+
 void BOTGyro::startCalibration() {
   _calAttempt = 1;
   enterState(State::Calibrating);
@@ -356,17 +354,14 @@ const char* BOTGyro::stateString() const {
   return "?";
 }
 
-// Complementary filter: fuse the accelerometer (gravity reference, drift-free)
-// with the integrated gyro rate (fast, but drifts on its own) into stable
-// pitch/roll. Sign conventions depend on how the IMU is mounted - negate the
-// gyro terms (_raw.x / _raw.y) below if an axis reads the wrong way.
+
 void BOTGyro::updateAttitude() {
   const float rad2deg = 57.29577951f;
   const float ax = _accel.x, ay = _accel.y, az = _accel.z;
   const float accPitch = atan2(ay, az) * rad2deg;                       // about X
   const float accRoll  = atan2(-ax, sqrt(ay * ay + az * az)) * rad2deg; // about Y
 
-  if (!_attInit) {                       // seed from gravity so we don't start at 0
+  if (!_attInit) {                       
     _pitch     = accPitch;
     _roll      = accRoll;
     _attLastUs = micros();
@@ -377,7 +372,7 @@ void BOTGyro::updateAttitude() {
   const uint32_t now = micros();
   float dt = (now - _attLastUs) * 1e-6f;
   _attLastUs = now;
-  if (dt <= 0.0f || dt > 0.2f) dt = 0.0f;   // guard against timing glitches
+  if (dt <= 0.0f || dt > 0.2f) dt = 0.0f;   
 
   _pitch = _attAlpha * (_pitch + _raw.x * dt) + (1.0f - _attAlpha) * accPitch;
   _roll  = _attAlpha * (_roll  + _raw.y * dt) + (1.0f - _attAlpha) * accRoll;

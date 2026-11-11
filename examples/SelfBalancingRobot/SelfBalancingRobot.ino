@@ -3,16 +3,6 @@
  * ============================================================================
  *  A two-wheel self-balancing robot (inverted pendulum) built on BOTGyro.
  *
- *  HOW IT WORKS
- *    1. BOTGyro gives us the bias-corrected pitch RATE (gyro) and the raw
- *       accelerometer, both from the ASM330LHH.
- *    2. A COMPLEMENTARY FILTER fuses them into a drift-free tilt ANGLE:
- *         angle = A*(angle + gyroRate*dt) + (1-A)*accelAngle
- *       The gyro handles fast motion; the accelerometer (gravity) anchors the
- *       long-term angle so it never drifts. (A gyro alone WOULD drift and fall.)
- *    3. A PID controller drives the wheels to keep the angle at the balance
- *       point. The gyro rate doubles as the PID derivative term.
- *    4. If the robot tips past FALL_LIMIT it has fallen - motors are cut.
  *
  *  HARDWARE (typical)
  *    - Arduino Nano

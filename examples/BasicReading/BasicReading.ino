@@ -1,12 +1,5 @@
 /*
  * BOTGyro - BasicReading
- * ----------------------
- * Minimal example: bring up the sensor, calibrate (hold the board still),
- * then print the filtered angular rates in degrees per second.
- *
- * Serial Monitor @ 115200 baud.
- *
- * No external libraries needed - uses the built-in Wire library.
  */
 
 #include <BOTGyro.h>

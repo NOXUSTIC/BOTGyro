@@ -1,8 +1,8 @@
 /*
  * ============================================================================
- *  BOTGyro  -  Adaptive, calibrated gyroscope library for the ST ASM330LHH
+ *  BOTGyro  -  Adaptive, calibrated gyroscope library for the IMU
  * ============================================================================
- *  Wraps the ASM330LHH 6-axis IMU and provides:
+ *  Wraps the 6-axis IMU and provides:
  *    - Zero-rate bias calibration with disturbance validation
  *    - Per-axis adaptive Kalman filtering (smooth at rest, snappy in motion)
  *    - A non-blocking state machine (IDLE / CALIBRATING / RUNNING / FAULT)
@@ -35,18 +35,9 @@
 
 #define BOTGYRO_VERSION "2.0.0"
 
-// ASM330LHH 7-bit I2C addresses (SA0/SDO pin: low -> 0x6A, high -> 0x6B)
 #define BOTGYRO_ADDR_LOW  0x6A
 #define BOTGYRO_ADDR_HIGH 0x6B
 
-// ---------------------------------------------------------------------------
-//  BOTGyroKalman
-//
-//  Adaptive 1-D Kalman filter. Used internally per axis, but reusable on its
-//  own for smoothing any noisy scalar. The process-noise term scales with the
-//  measurement innovation: small (in-band) deviations are smoothed heavily,
-//  while a large deviation relaxes the filter so it tracks quickly.
-// ---------------------------------------------------------------------------
 class BOTGyroKalman {
 public:
   void  configure(float r, float qMin, float qMax, float deadzone, float ramp);
@@ -59,36 +50,33 @@ private:
   float _x = 0.0f,  _p = 1.0f, _k = 0.0f;
 };
 
-// ---------------------------------------------------------------------------
-//  BOTGyro
-// ---------------------------------------------------------------------------
 class BOTGyro {
 public:
   enum class State : uint8_t { Idle, Calibrating, Running, Fault };
 
   explicit BOTGyro(TwoWire &wire = Wire, uint8_t i2cAddress = BOTGYRO_ADDR_LOW);
 
-  // ---- Setup (call configuration setters BEFORE begin/calibrate) ----
-  bool begin();                                   // returns false if sensor missing
+  // ---- Setup  ----
+  bool begin();                                
   void setODR(float hz)                  { _odr = hz; }
-  void setFullScale(int32_t dps)         { _fs = dps; }          // 250/500/1000/2000
+  void setFullScale(int32_t dps)         { _fs = dps; }          
   void setI2CClock(uint32_t hz)          { _i2cClock = hz; }
   void setCalibrationSamples(uint16_t n) { _calSamples = n; }
-  void setAccelFullScale(int32_t g)      { _accelFs = g; }            // 2/4/8/16
-  void setFilterEnabled(bool en)         { _filterEnabled = en; }     // gyro Kalman on/off
-  void enableAttitude(bool en = true)    { _attitudeEnabled = en; }   // compute pitch/roll
-  void setAttitudeFilter(float alpha)    { _attAlpha = alpha; }       // 0.90-0.99
+  void setAccelFullScale(int32_t g)      { _accelFs = g; }            
+  void setFilterEnabled(bool en)         { _filterEnabled = en; }    
+  void enableAttitude(bool en = true)    { _attitudeEnabled = en; }   
+  void setAttitudeFilter(float alpha)    { _attAlpha = alpha; }       
   void setKalman(float r, float qMin, float qMax, float rampDps, float deadzoneK) {
     _kfR = r; _kfQMin = qMin; _kfQMax = qMax; _kfRamp = rampDps; _kfDeadzoneK = deadzoneK;
   }
 
   // ---- Calibration ----
-  void startCalibration();                        // non-blocking; progressed by update()
-  bool calibrate(uint32_t timeoutMs = 30000);     // blocking convenience; true on success
+  void startCalibration();                        
+  bool calibrate(uint32_t timeoutMs = 30000);     
   bool isCalibrated() const { return _calibrated; }
 
   // ---- Main loop ----
-  bool update();                                  // call often; true on each fresh sample
+  bool update();                                
   void resetFilters() { _kx.reset(); _ky.reset(); _kz.reset(); }
 
   // ---- Filtered angular rate (dps) ----
@@ -115,11 +103,11 @@ public:
   bool        isRunning() const     { return _state == State::Running; }
   bool        isCalibrating() const { return _state == State::Calibrating; }
   bool        isFaulted() const     { return _state == State::Fault; }
-  uint16_t    getSampleRate() const { return _sampleRateHz; }     // Hz, measured
-  float       getBiasX() const      { return _bias.x / 1000.0f; } // dps
+  uint16_t    getSampleRate() const { return _sampleRateHz; }     
+  float       getBiasX() const      { return _bias.x / 1000.0f; } 
   float       getBiasY() const      { return _bias.y / 1000.0f; }
   float       getBiasZ() const      { return _bias.z / 1000.0f; }
-  float       getNoiseX() const     { return _noise.x; }          // dps (std)
+  float       getNoiseX() const     { return _noise.x; }          
   float       getNoiseY() const     { return _noise.y; }
   float       getNoiseZ() const     { return _noise.z; }
   const char* stateString() const;
@@ -143,8 +131,8 @@ private:
 
   TwoWire* _wire;
   uint8_t  _address;
-  float    _gyroSens  = 70.0f;     // mdps/LSB  (set from full scale)
-  float    _accelSens = 0.061f;    // mg/LSB    (set from full scale)
+  float    _gyroSens  = 70.0f;     
+  float    _accelSens = 0.061f;    
 
   // configuration
   float    _odr        = 104.0f;
@@ -163,19 +151,19 @@ private:
   State _state      = State::Idle;
   bool  _calibrated = false;
 
-  bool     _filterEnabled   = true;     // gyro Kalman filtering on by default
-  bool     _attitudeEnabled = false;    // pitch/roll computed only when enabled
-  float    _attAlpha = 0.98f;           // complementary filter constant
-  float    _pitch = 0.0f, _roll = 0.0f; // deg
+  bool     _filterEnabled   = true;    
+  bool     _attitudeEnabled = false;   
+  float    _attAlpha = 0.98f;          
+  float    _pitch = 0.0f, _roll = 0.0f; 
   uint32_t _attLastUs = 0;
   bool     _attInit = false;
 
   BOTGyroKalman _kx, _ky, _kz;
-  Vec3 _bias  = {0, 0, 0};   // mdps
-  Vec3 _noise = {0, 0, 0};   // dps
-  Vec3 _raw   = {0, 0, 0};   // dps
-  Vec3 _filt  = {0, 0, 0};   // dps
-  Vec3 _accel = {0, 0, 0};   // g
+  Vec3 _bias  = {0, 0, 0};   
+  Vec3 _noise = {0, 0, 0};   
+  Vec3 _raw   = {0, 0, 0};   
+  Vec3 _filt  = {0, 0, 0};   
+  Vec3 _accel = {0, 0, 0};  
 
   // calibration accumulators
   uint16_t _calCount   = 0;
@@ -192,4 +180,4 @@ private:
   uint32_t _rateWindowMs = 0;
 };
 
-#endif  // BOTGYRO_H
+#endif  

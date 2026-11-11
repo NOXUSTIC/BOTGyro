@@ -8,7 +8,6 @@
  * 2. Set the Plotter's baud rate to 115200.
  * 3. Hold still during calibration, then twist the board to see the traces move.
  *
- * No external libraries needed - uses the built-in Wire library.
  */
 
 #include <BOTGyro.h>
@@ -37,7 +36,7 @@ void loop() {
 
   if (gyro.isRunning() && millis() - lastPrint >= PRINT_INTERVAL_MS) {
     lastPrint = millis();
-    // No spaces after the colons - required by the Serial Plotter parser.
+  
     Serial.print(F("X:"));  Serial.print(gyro.getX(), 2);
     Serial.print(F(",Y:")); Serial.print(gyro.getY(), 2);
     Serial.print(F(",Z:")); Serial.println(gyro.getZ(), 2);
